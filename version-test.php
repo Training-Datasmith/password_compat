@@ -1,6 +1,8 @@
 <?php
 
-require "lib/password.php";
+declare(strict_types=1);
 
-echo "Test for functionality of compat library: " . (PasswordCompat\binary\check() ? "Pass" : "Fail");
+require 'lib/password.php';
+
+echo 'Test for functionality of compat library: ' . (PasswordCompat\binary\check() ? 'Pass' : 'Fail');
 echo "\n";
