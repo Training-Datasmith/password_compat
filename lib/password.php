@@ -32,7 +32,7 @@ namespace {
          *
          * @return string|false The hashed password, or false on error.
          */
-        function password_hash($password, $algo, array $options = array()) {
+        function password_hash($password, $algo, array $options = []): null|false|string {
             if (!function_exists('crypt')) {
                 trigger_error("Crypt must be loaded for password_hash to function", E_USER_WARNING);
                 return null;
@@ -95,7 +95,8 @@ namespace {
                 if (PasswordCompat\binary\_strlen($salt) < $required_salt_len) {
                     trigger_error(sprintf("password_hash(): Provided salt is too short: %d expecting %d", PasswordCompat\binary\_strlen($salt), $required_salt_len), E_USER_WARNING);
                     return null;
-                } elseif (0 == preg_match('#^[a-zA-Z0-9./]+$#D', $salt)) {
+                }
+                if (0 == preg_match('#^[a-zA-Z0-9./]+$#D', $salt)) {
                     $salt_req_encoding = true;
                 }
             } else {
@@ -157,7 +158,7 @@ namespace {
 
             $ret = crypt($password, $hash);
 
-            if (!is_string($ret) || PasswordCompat\binary\_strlen($ret) != $resultLength) {
+            if (PasswordCompat\binary\_strlen($ret) != $resultLength) {
                 return false;
             }
 
@@ -180,16 +181,16 @@ namespace {
          *
          * @return array The array of information about the hash.
          */
-        function password_get_info($hash) {
-            $return = array(
+        function password_get_info($hash): array {
+            $return = [
                 'algo' => 0,
                 'algoName' => 'unknown',
-                'options' => array(),
-            );
+                'options' => [],
+            ];
             if (PasswordCompat\binary\_substr($hash, 0, 4) == '$2y$' && PasswordCompat\binary\_strlen($hash) == 60) {
                 $return['algo'] = PASSWORD_BCRYPT;
                 $return['algoName'] = 'bcrypt';
-                list($cost) = sscanf($hash, "$2y$%d$");
+                [$cost] = sscanf($hash, "$2y$%d$");
                 $return['options']['cost'] = $cost;
             }
             return $return;
@@ -206,7 +207,7 @@ namespace {
          *
          * @return boolean True if the password needs to be rehashed.
          */
-        function password_needs_rehash($hash, $algo, array $options = array()) {
+        function password_needs_rehash($hash, $algo, array $options = []): bool {
             $info = password_get_info($hash);
             if ($info['algo'] !== (int) $algo) {
                 return true;
@@ -267,7 +268,7 @@ namespace PasswordCompat\binary {
          * @internal
          * @return int The number of bytes
          */
-        function _strlen($binary_string) {
+        function _strlen($binary_string): int {
             if (function_exists('mb_strlen')) {
                 return mb_strlen($binary_string, '8bit');
             }
@@ -286,7 +287,7 @@ namespace PasswordCompat\binary {
          * @internal
          * @return string The substring
          */
-        function _substr($binary_string, $start, $length) {
+        function _substr($binary_string, $start, $length): string {
             if (function_exists('mb_substr')) {
                 return mb_substr($binary_string, $start, $length, '8bit');
             }
