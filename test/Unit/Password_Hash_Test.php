@@ -2,6 +2,28 @@
 
 class Password_Hash_Test extends PHPUnit\Framework\TestCase
 {
+  private function with_salt_deprecation_suppressed($callback)
+    {
+        if (version_compare(PHP_VERSION, '5.5.0', '<')) {
+            return $callback();
+        }
+        set_error_handler(function ($errno, $errstr, $file, $line) {
+            if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+                return true;
+            }
+            restore_error_handler();
+            if ($errno === E_WARNING) {
+                throw new PHPUnit\Framework\Error\Warning($errstr, $errno, $file, $line);
+            }
+            return false;
+        });
+        try {
+            return $callback();
+        } finally {
+            restore_error_handler();
+        }
+    }
+
   private function invoke_with_salt_deprecation_check($callback)
     {
         if (version_compare(PHP_VERSION, '5.5.0', '<')) {
@@ -101,7 +123,9 @@ class Password_Hash_Test extends PHPUnit\Framework\TestCase
     public function test_invalid_salt()
     {
         $this->expectException(PHPUnit\Framework\Error\Warning::class);
-        password_hash('foo', PASSWORD_BCRYPT, array('salt' => array()));
+        $this->with_salt_deprecation_suppressed(function () {
+            password_hash('foo', PASSWORD_BCRYPT, array('salt' => array()));
+        });
     }
 
     public function test_invalid_bcrypt_cost_low()
@@ -125,6 +149,8 @@ class Password_Hash_Test extends PHPUnit\Framework\TestCase
     public function test_invalid_bcrypt_salt_short()
     {
         $this->expectException(PHPUnit\Framework\Error\Warning::class);
-        password_hash('foo', PASSWORD_BCRYPT, array('salt' => 'abc'));
+        $this->with_salt_deprecation_suppressed(function () {
+            password_hash('foo', PASSWORD_BCRYPT, array('salt' => 'abc'));
+        });
     }
 }

@@ -41,7 +41,7 @@ $tmpTest = $tmpDir . '/Password_Verify_Test.php';
 file_put_contents($tmpTest, $mutated);
 
 $cmd = escapeshellarg(PHP_BINARY)
-    . ' -d error_reporting=32767 -d display_errors=0 '
+    . ' -d error_reporting=32767 '
     . escapeshellarg($phpunit)
     . ' --colors=never --no-coverage --bootstrap '
     . escapeshellarg($root . '/lib/password.php')
