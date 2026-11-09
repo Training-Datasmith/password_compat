@@ -14,6 +14,8 @@ docker_cmd() {
     fi
 }
 
+bash "${REPO_ROOT}/scripts/check-floor-lint-policy.sh"
+
 docker_cmd build -f "${REPO_ROOT}/docker/system-test/Dockerfile" -t "${TEST_IMAGE}" "${REPO_ROOT}"
 docker_cmd build -f "${REPO_ROOT}/docker/floor-lint/Dockerfile" -t "${FLOOR_IMAGE}" "${REPO_ROOT}"
 
