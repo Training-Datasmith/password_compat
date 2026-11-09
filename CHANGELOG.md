@@ -11,4 +11,4 @@ This changelog references the relevant changes (bug and security fixes) done in 
      * bug #48 - Integers aren't "strings" so exception is thrown
      * PR #69 - Missing `PASSWORD_BCRYPT_DEFAULT_COST` constant definition
      * PR #70 - Fix test suite with Travis
-     * PR #58 - Add `PasswordCompat\binary\check()` function to encapsulate tests
+     * PR #58 - Add `Password_Compat\binary\check()` function to encapsulate tests

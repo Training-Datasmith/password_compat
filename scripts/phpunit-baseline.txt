@@ -1,0 +1,5 @@
+source=dfdbc467fba0d1db4c2f51fda58e1717046f3284
+tests=32
+assertions=40
+line=OK (32 tests, 40 assertions)
+justification=four salt-option tests on PHP 7.2 each record two explicit deprecation assertions (assertNotEmpty, assertRegExp) in invoke_with_salt_deprecation_check; no tests dropped

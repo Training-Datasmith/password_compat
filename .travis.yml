@@ -1,19 +1,12 @@
 language: php
 
 php:
-  - 5.3
-  - 5.4
-  - 5.5
-  - 5.6
-  - hhvm
+  - 7.2
 
 install:
-  - travis_retry composer install --no-interaction --prefer-source
+  - travis_retry composer update --no-interaction --prefer-dist
 
 script:
-  - vendor/bin/phpunit
-
-matrix:
-  allow_failures:
-    - php: hhvm
-  fast_finish: true
+  - php scripts/check-cluster-pins.php
+  - php scripts/check-rename.php
+  - php -d error_reporting=32767 vendor/bin/phpunit --colors=never --no-coverage

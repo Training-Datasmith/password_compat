@@ -1,34 +1,62 @@
 <?php
 
-declare(strict_types=1);
-
-class PasswordHashTest extends PHPUnit_Framework_TestCase
+class Password_Hash_Test extends PHPUnit\Framework\TestCase
 {
-    public function testFuncExists()
+  private function invoke_with_salt_deprecation_check($callback)
+    {
+        if (version_compare(PHP_VERSION, '5.5.0', '<')) {
+            return $callback();
+        }
+        $deprecated = array();
+        set_error_handler(function ($errno, $errstr) use (&$deprecated) {
+            if ($errno === E_DEPRECATED || $errno === E_USER_DEPRECATED) {
+                $deprecated[] = $errstr;
+                return true;
+            }
+            return false;
+        });
+        try {
+            $result = $callback();
+        } catch (Exception $e) {
+            restore_error_handler();
+            throw $e;
+        }
+        restore_error_handler();
+        $this->assertNotEmpty($deprecated);
+        $this->assertRegExp('/salt/i', implode("\n", $deprecated));
+
+        return $result;
+    }
+
+    public function test_func_exists()
     {
         $this->assertTrue(function_exists('password_hash'));
     }
 
-    public function testStringLength()
+    public function test_string_length()
     {
         $this->assertEquals(60, strlen(password_hash('foo', PASSWORD_BCRYPT)));
     }
 
-    public function testHash()
+    public function test_hash()
     {
         $hash = password_hash('foo', PASSWORD_BCRYPT);
         $this->assertEquals($hash, crypt('foo', $hash));
     }
 
-    public function testKnownSalt()
+    public function test_known_salt()
     {
-        $hash = password_hash('rasmuslerdorf', PASSWORD_BCRYPT, ['cost' => 7, 'salt' => 'usesomesillystringforsalt']);
+        $hash = $this->invoke_with_salt_deprecation_check(function () {
+            return password_hash('rasmuslerdorf', PASSWORD_BCRYPT, array('cost' => 7, 'salt' => 'usesomesillystringforsalt'));
+        });
         $this->assertEquals('$2y$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi', $hash);
     }
 
-    public function testRawSalt()
+    public function test_raw_salt()
     {
-        $hash = password_hash('test', PASSWORD_BCRYPT, ['salt' => '123456789012345678901' . chr(0)]);
+        $hash = $this->invoke_with_salt_deprecation_check(function () {
+            return password_hash('test', PASSWORD_BCRYPT, array('salt' => '123456789012345678901' . chr(0)));
+        });
         if (version_compare(PHP_VERSION, '5.5.0', '<')) {
             $this->assertEquals('$2y$10$KRGxLBS0Lxe3KBCwKxOzLexLDeu0ZfqJAKTubOfy7O/yL2hjimw3u', $hash);
         } else {
@@ -36,80 +64,67 @@ class PasswordHashTest extends PHPUnit_Framework_TestCase
         }
     }
 
-    public function testNullBehavior()
+    public function test_null_behavior()
     {
-        $hash = password_hash(null, PASSWORD_BCRYPT, ['salt' => '1234567890123456789012345678901234567890']);
+        $hash = $this->invoke_with_salt_deprecation_check(function () {
+            return password_hash(null, PASSWORD_BCRYPT, array('salt' => '1234567890123456789012345678901234567890'));
+        });
         $this->assertEquals('$2y$10$123456789012345678901uhihPb9QpE2n03zMu9TDdvO34jDn6mO.', $hash);
     }
 
-    public function testIntegerBehavior()
+    public function test_integer_behavior()
     {
-        $hash = password_hash(12345, PASSWORD_BCRYPT, ['salt' => '1234567890123456789012345678901234567890']);
+        $hash = $this->invoke_with_salt_deprecation_check(function () {
+            return password_hash(12345, PASSWORD_BCRYPT, array('salt' => '1234567890123456789012345678901234567890'));
+        });
         $this->assertEquals('$2y$10$123456789012345678901ujczD5TiARVFtc68bZCAlbEg1fCIexfO', $hash);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidAlgo()
+    public function test_invalid_algo()
     {
-        password_hash('foo', []);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', array());
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidAlgo2()
+    public function test_invalid_algo2()
     {
-        password_hash('foo', 2);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', 99);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidPassword()
+    public function test_invalid_password()
     {
-        password_hash([], 1);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash(array(), 1);
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidSalt()
+    public function test_invalid_salt()
     {
-        password_hash('foo', PASSWORD_BCRYPT, ['salt' => []]);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', PASSWORD_BCRYPT, array('salt' => array()));
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidBcryptCostLow()
+    public function test_invalid_bcrypt_cost_low()
     {
-        password_hash('foo', PASSWORD_BCRYPT, ['cost' => 3]);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', PASSWORD_BCRYPT, array('cost' => 3));
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidBcryptCostHigh()
+    public function test_invalid_bcrypt_cost_high()
     {
-        password_hash('foo', PASSWORD_BCRYPT, ['cost' => 32]);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', PASSWORD_BCRYPT, array('cost' => 32));
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidBcryptCostInvalid()
+    public function test_invalid_bcrypt_cost_invalid()
     {
-        password_hash('foo', PASSWORD_BCRYPT, ['cost' => 'foo']);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', PASSWORD_BCRYPT, array('cost' => 'foo'));
     }
 
-    /**
-     * @expectedException PHPUnit_Framework_Error
-     */
-    public function testInvalidBcryptSaltShort()
+    public function test_invalid_bcrypt_salt_short()
     {
-        password_hash('foo', PASSWORD_BCRYPT, ['salt' => 'abc']);
+        $this->expectException(PHPUnit\Framework\Error\Warning::class);
+        password_hash('foo', PASSWORD_BCRYPT, array('salt' => 'abc'));
     }
-
 }

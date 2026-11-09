@@ -1,31 +1,28 @@
 <?php
 
-declare(strict_types=1);
-
-class PasswordNeedsRehashTest extends PHPUnit_Framework_TestCase
+class Password_Needs_Rehash_Test extends PHPUnit\Framework\TestCase
 {
-    public static function provideCases()
+    public static function provide_cases()
     {
-        return [
-            ['foo', 0, [], false],
-            ['foo', 1, [], true],
-            ['$2y$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi', PASSWORD_BCRYPT, [], true],
-            ['$2y$07$usesomesillystringfore2udlvp1ii2e./u9c8sbjqp8i90dh6hi', PASSWORD_BCRYPT, ['cost' => 7], false],
-            ['$2y$07$usesomesillystringfore2udlvp1ii2e./u9c8sbjqp8i90dh6hi', PASSWORD_BCRYPT, ['cost' => 5], true],
-        ];
+        return array(
+            array('foo', 0, array(), false),
+            array('foo', 1, array(), true),
+            array('$2y$07$usesomesillystringfore2uDLvp1Ii2e./U9C8sBjqp8I90dH6hi', PASSWORD_BCRYPT, array(), true),
+            array('$2y$07$usesomesillystringfore2udlvp1ii2e./u9c8sbjqp8i90dh6hi', PASSWORD_BCRYPT, array('cost' => 7), false),
+            array('$2y$07$usesomesillystringfore2udlvp1ii2e./u9c8sbjqp8i90dh6hi', PASSWORD_BCRYPT, array('cost' => 5), true),
+        );
     }
 
-    public function testFuncExists()
+    public function test_func_exists()
     {
         $this->assertTrue(function_exists('password_needs_rehash'));
     }
 
     /**
-     * @dataProvider provideCases
+     * @dataProvider provide_cases
      */
-    public function testCases($hash, $algo, $options, $valid)
+    public function test_cases($hash, $algo, $options, $valid)
     {
         $this->assertEquals($valid, password_needs_rehash($hash, $algo, $options));
     }
-
 }

@@ -16,7 +16,7 @@ version-test.php — Runtime check to verify bcrypt support is functional
 
 - **Guard-wrapped**: Each function is wrapped in `if (!function_exists(...))`, so including this file on PHP 5.5+ is a no-op
 - **Timing-safe verification**: `password_verify()` uses a constant-time XOR loop instead of `==` to prevent timing attacks
-- **Binary-safe helpers**: A private `Password_Compat\binary` namespace provides `_strlen()` and `_substr()` that use `mb_strlen`/`mb_substr` in `8bit` mode, preventing multibyte extension interference with raw bytes
+- **Binary-safe helpers**: A private `Password_Compat\binary` namespace provides `_strlen()` and `_substr()` that use `mb_strlen`/`mb_substr` in `8bit` mode, preventing multibyte extension interference with raw bytes (see `version-test.php` via `Password_Compat\binary\check()`).
 - **Entropy sources**: Salt generation tries `mcrypt_create_iv`, then `openssl_random_pseudo_bytes`, then `/dev/urandom`, falling back to `mt_rand` XOR
 
 ## Dependency Flow
