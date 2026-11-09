@@ -9,7 +9,7 @@ RUN set -eux; \
     printf '%s\n' \
         'deb https://archive.debian.org/debian buster main' \
         > /etc/apt/sources.list; \
-    printf '%s\n' 'Acquire::Check-Valid-Until "false";' > /etc/apt/apt.conf.d/99no-check-valid-until; \
+    printf '%s\n' 'Acquire::Check-Valid-Until::"archive.debian.org" "false";' > /etc/apt/apt.conf.d/99archive-https; \
     apt-get update; \
     apt-get install -y --no-install-recommends \
         bzip2 \
